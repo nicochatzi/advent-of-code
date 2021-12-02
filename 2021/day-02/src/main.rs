@@ -37,7 +37,7 @@ impl FromStr for Directions {
 }
 
 impl Directions {
-    fn sum(&self) -> (i32, i32) {
+    fn route(&self) -> (i32, i32) {
         self.0.iter().fold((0, 0), |state, dir| match dir {
             Direction::Up(x) => (state.0, state.1 - x),
             Direction::Down(x) => (state.0, state.1 + x),
@@ -46,9 +46,23 @@ impl Directions {
         })
     }
 
-    fn product(&self) -> i32 {
-        let sum = self.sum();
-        sum.0 * sum.1
+    fn route_product(&self) -> i32 {
+        let route = self.route();
+        route.0 * route.1
+    }
+
+    fn route_with_aim(&self) -> (i32, i32, i32) {
+        self.0.iter().fold((0, 0, 0), |state, dir| match dir {
+            Direction::Up(x) => (state.0, state.1, state.2 - x),
+            Direction::Down(x) => (state.0, state.1, state.2 + x),
+            Direction::Forward(x) => (state.0 + x, state.1 + (x * state.2), state.2),
+            Direction::Back(x) => (state.0 - x, state.1 - (x * state.2), state.2),
+        })
+    }
+
+    fn route_with_aim_product(&self) -> i32 {
+        let route = self.route_with_aim();
+        route.0 * route.1
     }
 }
 
@@ -57,7 +71,13 @@ fn main() {
         "star 0 : {}",
         Directions::from_str(include_str!("../res/data.in"))
             .unwrap()
-            .product()
+            .route_product()
+    );
+    println!(
+        "star 1 : {}",
+        Directions::from_str(include_str!("../res/data.in"))
+            .unwrap()
+            .route_with_aim_product()
     );
 }
 
@@ -105,11 +125,13 @@ fn can_accumulate_directions() {
     let raw_directions = r"forward 13
 down 12";
     assert_eq!(
-        Directions::from_str(raw_directions).unwrap().sum(),
+        Directions::from_str(raw_directions).unwrap().route(),
         (13, 12)
     );
     assert_eq!(
-        Directions::from_str(raw_directions).unwrap().product(),
+        Directions::from_str(raw_directions)
+            .unwrap()
+            .route_product(),
         13 * 12
     );
 
@@ -121,11 +143,35 @@ back 2
 up 1
 down 50";
     assert_eq!(
-        Directions::from_str(raw_directions).unwrap().sum(),
+        Directions::from_str(raw_directions).unwrap().route(),
         (12, 51)
     );
     assert_eq!(
-        Directions::from_str(raw_directions).unwrap().product(),
+        Directions::from_str(raw_directions)
+            .unwrap()
+            .route_product(),
         12 * 51
+    );
+}
+
+#[test]
+fn can_accumulate_directions_with_aim() {
+    let raw_directions = r"forward 5
+down 5
+forward 8
+up 3
+down 8
+forward 2";
+    assert!(matches!(
+        Directions::from_str(raw_directions)
+            .unwrap()
+            .route_with_aim(),
+        (15, 60, _)
+    ));
+    assert_eq!(
+        Directions::from_str(raw_directions)
+            .unwrap()
+            .route_with_aim_product(),
+        15 * 60
     );
 }
