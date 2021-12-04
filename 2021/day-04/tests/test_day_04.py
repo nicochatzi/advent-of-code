@@ -32,6 +32,11 @@ def test_split_data():
     assert boards[2].inner[1] == (21, False)
 
 
-def test_aoc_input():
+def test_aoc_input_star_6():
     nums, boards = split_data(aoc_input)
-    assert play(nums, boards) == 4512
+    assert get_winning_result(nums, boards) == 4512
+
+
+def test_aoc_input_star_7():
+    nums, boards = split_data(aoc_input)
+    assert get_loosing_result(nums, boards) == 1924
