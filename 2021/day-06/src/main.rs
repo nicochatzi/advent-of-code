@@ -1,35 +1,60 @@
-fn generation(fishes: Vec<usize>) -> Vec<usize> {
-    fishes.iter().fold(vec![], |mut next_gen, age| {
-        if *age == 0 {
-            next_gen.extend_from_slice(&[6, 8])
-        } else {
-            next_gen.push(age - 1)
-        }
-        next_gen
-    })
-}
+#[derive(Debug, Default, Clone)]
+struct School([usize; 9]);
 
-fn run_n_generations(fishes: Vec<usize>, n: usize) -> usize {
-    (0..n).fold(fishes, |fishes, _| generation(fishes)).len()
-}
+impl School {
+    fn from_str(s: &str) -> Self {
+        Self(
+            s.split(',')
+                .map(|s| s.parse::<usize>().unwrap())
+                .fold([0; 9], |mut school, fish| {
+                    school[fish] += 1;
+                    school
+                }),
+        )
+    }
 
-fn parse_input(input: &str) -> Vec<usize> {
-    input
-        .split(',')
-        .map(|s| s.parse::<usize>().unwrap())
-        .collect()
+    fn generation(&mut self) {
+        *self = (0..9).fold(School::default(), |mut school, age| {
+            if age == 0 {
+                school.0[6] += self.0[age];
+                school.0[8] += self.0[age];
+            } else {
+                school.0[age - 1] += self.0[age];
+            }
+            school
+        });
+    }
+
+    fn run_n_generations(&mut self, n: usize) -> usize {
+        (0..n).for_each(|_| self.generation());
+        self.0.iter().sum()
+    }
 }
 
 fn main() {
     println!(
         "star 11 : {}",
-        run_n_generations(parse_input(include_str!("../res/data.txt")), 80)
+        School::from_str(include_str!("../res/data.txt")).run_n_generations(80)
     );
+    println!(
+        "star 12 : {}",
+        School::from_str(include_str!("../res/data.txt")).run_n_generations(256)
+    );
+}
+
+#[cfg(test)]
+fn aoc_input() -> School {
+    School::from_str("3,4,3,1,2")
 }
 
 #[test]
 fn can_find_aoc_input_result_star_11() {
-    let aoc_input = parse_input("3,4,3,1,2");
-    assert_eq!(run_n_generations(aoc_input.clone(), 18), 26);
-    assert_eq!(run_n_generations(aoc_input.clone(), 80), 5934);
+    let mut fishes = aoc_input();
+    assert_eq!(fishes.clone().run_n_generations(18), 26);
+    assert_eq!(fishes.run_n_generations(80), 5934);
+}
+
+#[test]
+fn can_find_aoc_input_result_star_12() {
+    assert_eq!(aoc_input().run_n_generations(256), 26_984_457_539);
 }
