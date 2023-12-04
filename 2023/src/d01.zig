@@ -50,9 +50,9 @@ fn parseWordsInLine(line: []const u8) u8 {
     return (first orelse digit) * 10 + digit;
 }
 
-fn run(comptime processLine: fn ([]const u8) u8, seqeuence: []const u8) u32 {
+fn run(comptime processLine: fn ([]const u8) u8, sequence: []const u8) u32 {
     var sum: u32 = 0;
-    var it = std.mem.splitSequence(u8, seqeuence, "\n");
+    var it = std.mem.splitSequence(u8, sequence, "\n");
     while (it.next()) |line| {
         sum += processLine(line);
     }
@@ -69,7 +69,7 @@ fn partTwo(seqeuence: []const u8) u32 {
 
 pub fn main() !void {
     var allocator = std.heap.page_allocator;
-    const data = try utils.readFile(&allocator, "d01.txt");
+    const data = try utils.readFile(&allocator, "res/d01.txt");
     defer allocator.free(data);
 
     std.debug.print("part one : {d}\n", .{partOne(data)});

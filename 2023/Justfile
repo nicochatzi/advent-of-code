@@ -1,0 +1,8 @@
+test id:
+    watchexec -c -r  'zig test src/{{id}}.zig'
+
+run id:
+    zig run src/{{id}}.zig
+
+dev id:
+    watchexec -c -r  'just test {{id}}'
