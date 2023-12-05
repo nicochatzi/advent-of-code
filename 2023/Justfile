@@ -1,3 +1,4 @@
+# id = [d01, d25]
 test id:
     watchexec -c -r  'zig test src/{{id}}.zig'
 
