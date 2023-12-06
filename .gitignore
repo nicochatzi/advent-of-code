@@ -1,8 +1,8 @@
 build
 out
+bin
 target
 Cargo.lock
-.vscode
 __pycache__
 .pytest_cache
 .mypy_cache

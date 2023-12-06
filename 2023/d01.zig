@@ -1,5 +1,4 @@
 const std = @import("std");
-const utils = @import("utils.zig");
 
 fn findDigitInChar(char: u8) ?u8 {
     return switch (char) {
@@ -68,12 +67,16 @@ fn partTwo(seqeuence: []const u8) u32 {
 }
 
 pub fn main() !void {
-    var allocator = std.heap.page_allocator;
-    const data = try utils.readFile(&allocator, "res/d01.txt");
-    defer allocator.free(data);
-
-    std.debug.print("part one : {d}\n", .{partOne(data)});
-    std.debug.print("part two : {d}\n", .{partTwo(data)});
+    const data = @embedFile("res/d01.txt");
+    var timer = try std.time.Timer.start();
+    std.debug.print("one : {d}\ntime : {}\n\n", .{
+        partOne(data),
+        std.fmt.fmtDuration(timer.lap()),
+    });
+    std.debug.print("two : {d}\ntime : {}\n\n", .{
+        partTwo(data),
+        std.fmt.fmtDuration(timer.read()),
+    });
 }
 
 test parseDigitsInLine {
@@ -90,7 +93,6 @@ test partOne {
         \\a1b2c3d4e5f
         \\treb7uchet
     ;
-
     try std.testing.expectEqual(partOne(data), 142);
 }
 
@@ -114,6 +116,5 @@ test partTwo {
         \\zoneight234
         \\7pqrstsixteen
     ;
-
     try std.testing.expectEqual(partTwo(data), 281);
 }

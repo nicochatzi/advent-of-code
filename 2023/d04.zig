@@ -1,5 +1,4 @@
 const std = @import("std");
-const utils = @import("utils.zig");
 
 fn cardIteratorFromLine(line: []const u8) std.mem.TokenIterator(u8, .sequence) {
     var sectionIt = std.mem.tokenizeSequence(u8, line, ":");
@@ -97,12 +96,18 @@ fn partTwo(allocator: std.mem.Allocator, sequence: []const u8) !usize {
 }
 
 pub fn main() !void {
-    var allocator = std.heap.page_allocator;
-    const data = try utils.readFile(&allocator, "res/d04.txt");
-    defer allocator.free(data);
+    const allocator = std.heap.page_allocator;
+    const data = @embedFile("res/d04.txt");
 
-    std.debug.print("part one : {d}\n", .{try partOne(allocator, data)});
-    std.debug.print("part two : {d}\n", .{try partTwo(allocator, data)});
+    var timer = try std.time.Timer.start();
+    std.debug.print("one : {d}\ntime : {}\n\n", .{
+        try partOne(allocator, data),
+        std.fmt.fmtDuration(timer.lap()),
+    });
+    std.debug.print("two : {d}\ntime : {}\n\n", .{
+        try partTwo(allocator, data),
+        std.fmt.fmtDuration(timer.read()),
+    });
 }
 
 test partOne {

@@ -1,56 +1,46 @@
 const std = @import("std");
-const utils = @import("utils.zig");
 
 // ---------------------------------------------------
 
 const Symbol = struct {
-    x: usize,
-    y: usize,
+    x: isize,
+    y: isize,
     c: u8,
 };
 
 const Range = struct {
-    xMin: usize,
-    xMax: usize,
-    y: usize,
+    xMin: isize,
+    xMax: isize,
+    y: isize,
 
     fn isAdjacent(self: @This(), p: Symbol) bool {
-        const px = std.math.cast(isize, p.x) orelse unreachable;
-        const py = std.math.cast(isize, p.y) orelse unreachable;
-        const xMin = (std.math.cast(isize, self.xMin) orelse unreachable);
-        const xMax = (std.math.cast(isize, self.xMax) orelse unreachable);
-        const y_ = std.math.cast(isize, self.y) orelse unreachable;
-
-        const isXAdjacent = px >= xMin - 1 and px <= xMax + 1;
-        const isYAdjacent = py >= y_ - 1 and py <= y_ + 1;
+        const isXAdjacent = p.x >= self.xMin - 1 and p.x <= self.xMax + 1;
+        const isYAdjacent = p.y >= self.y - 1 and p.y <= self.y + 1;
         return isXAdjacent and isYAdjacent;
     }
 };
 
 const Number = struct {
-    val: usize,
+    val: isize,
     pos: Range,
 };
 
-fn isDigit(c: u8) bool {
-    return c >= '0' and c <= '9';
-}
-
-fn parseSymbols(symbols: *std.ArrayList(Symbol), sequence: []const u8, y: usize) void {
+fn parseSymbols(symbols: *std.ArrayList(Symbol), sequence: []const u8, y: isize) void {
     for (sequence, 0..) |c, i| {
-        if (c != '.' and !isDigit(c)) {
-            symbols.append(.{ .x = i, .y = y, .c = c }) catch unreachable;
+        if (c != '.' and !std.ascii.isDigit(c)) {
+            const i_ = std.math.cast(isize, i) orelse unreachable;
+            symbols.append(.{ .x = i_, .y = y, .c = c }) catch unreachable;
         }
     }
 }
 
-fn parseNumbers(numbers: *std.ArrayList(Number), sequence: []const u8, y: usize) void {
-    var xMin: usize = 0;
-    var val: usize = 0;
+fn parseNumbers(numbers: *std.ArrayList(Number), sequence: []const u8, y: isize) void {
+    var xMin: isize = 0;
+    var val: isize = 0;
 
-    var i: usize = 0;
+    var i: isize = 0;
     for (sequence) |c| {
-        if (isDigit(c)) {
+        if (std.ascii.isDigit(c)) {
             if (val == 0) xMin = i;
             val = val * 10 + (c - '0');
         } else if (val != 0) {
@@ -67,15 +57,14 @@ fn parseNumbers(numbers: *std.ArrayList(Number), sequence: []const u8, y: usize)
 
 fn parseSchematic(symbols: *std.ArrayList(Symbol), numbers: *std.ArrayList(Number), sequence: []const u8) void {
     var it = std.mem.tokenizeSequence(u8, sequence, "\n");
-    var i: usize = 0;
-    while (it.next()) |line| {
+    var i: isize = 0;
+    while (it.next()) |line| : (i += 1) {
         parseSymbols(symbols, line, i);
         parseNumbers(numbers, line, i);
-        i += 1;
     }
 }
 
-fn partOne(allocator: std.mem.Allocator, sequence: []const u8) usize {
+fn partOne(allocator: std.mem.Allocator, sequence: []const u8) isize {
     var symbols = std.ArrayList(Symbol).init(allocator);
     defer symbols.deinit();
 
@@ -84,7 +73,7 @@ fn partOne(allocator: std.mem.Allocator, sequence: []const u8) usize {
 
     parseSchematic(&symbols, &numbers, sequence);
 
-    var result: usize = 0;
+    var result: isize = 0;
     for (numbers.items) |number| {
         for (symbols.items) |point| {
             if (number.pos.isAdjacent(point)) {
@@ -96,7 +85,7 @@ fn partOne(allocator: std.mem.Allocator, sequence: []const u8) usize {
     return result;
 }
 
-fn partTwo(allocator: std.mem.Allocator, sequence: []const u8) usize {
+fn partTwo(allocator: std.mem.Allocator, sequence: []const u8) isize {
     var symbols = std.ArrayList(Symbol).init(allocator);
     defer symbols.deinit();
 
@@ -105,7 +94,7 @@ fn partTwo(allocator: std.mem.Allocator, sequence: []const u8) usize {
 
     parseSchematic(&symbols, &numbers, sequence);
 
-    var result: usize = 0;
+    var result: isize = 0;
     for (symbols.items) |symbol| {
         if (symbol.c != '*') {
             continue;
@@ -129,12 +118,18 @@ fn partTwo(allocator: std.mem.Allocator, sequence: []const u8) usize {
 // ---------------------------------------------------
 
 pub fn main() !void {
-    var allocator = std.heap.page_allocator;
-    const data = try utils.readFile(&allocator, "res/d03.txt");
-    defer allocator.free(data);
+    const allocator = std.heap.page_allocator;
+    const data = @embedFile("res/d03.txt");
 
-    std.debug.print("part one : {d}\n", .{partOne(allocator, data)});
-    std.debug.print("part two : {d}\n", .{partTwo(allocator, data)});
+    var timer = try std.time.Timer.start();
+    std.debug.print("one : {d}\ntime : {}\n\n", .{
+        partOne(allocator, data),
+        std.fmt.fmtDuration(timer.lap()),
+    });
+    std.debug.print("two : {d}\ntime : {}\n\n", .{
+        partTwo(allocator, data),
+        std.fmt.fmtDuration(timer.read()),
+    });
 }
 
 // ---------------------------------------------------

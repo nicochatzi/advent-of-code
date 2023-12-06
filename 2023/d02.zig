@@ -1,5 +1,4 @@
 const std = @import("std");
-const utils = @import("utils.zig");
 
 const Dice = struct {
     r: usize,
@@ -94,13 +93,17 @@ fn partTwo(sequence: []const u8) usize {
 }
 
 pub fn main() !void {
-    var allocator = std.heap.page_allocator;
-    const data = try utils.readFile(&allocator, "res/d02.txt");
-    defer allocator.free(data);
-
+    const data = @embedFile("res/d02.txt");
+    var timer = try std.time.Timer.start();
     const max = Dice{ .r = 12, .g = 13, .b = 14 };
-    std.debug.print("part one : {d}\n", .{partOne(data, max)});
-    std.debug.print("part two : {d}\n", .{partTwo(data)});
+    std.debug.print("one : {d}\ntime : {}\n\n", .{
+        partOne(data, max),
+        std.fmt.fmtDuration(timer.lap()),
+    });
+    std.debug.print("two : {d}\ntime : {}\n\n", .{
+        partTwo(data),
+        std.fmt.fmtDuration(timer.read()),
+    });
 }
 
 test Dice {

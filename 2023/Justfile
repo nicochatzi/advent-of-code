@@ -1,9 +1,8 @@
-# id = [d01, d25]
-test id:
-    watchexec -c -r  'zig test src/{{id}}.zig'
-
 run id:
-    zig run src/{{id}}.zig
+    zig run {{id}}.zig -O ReleaseFast
+
+test id:
+    zig test {{id}}.zig
 
 dev id:
     watchexec -c -r  'just test {{id}}'
